@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+    <Version>0.9.1</Version>
+    <Description>A transient fault helper for Rebus using RabbitMQ</Description>
+    <Authors>Idfy Norge AS</Authors>
+    <PackageId>Rebus.RabbitMq.TransientFaultHelper</PackageId>
+    <PackageTags>idfy;rebus;rabbitmq</PackageTags>
+    <PackageIconUrl>https://idfy-img.azureedge.net/nuget-icon-128x128.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/idfy-io/Rebus.RabbitMq.TransientFaultHelper</PackageProjectUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/idfy-io/Rebus.RabbitMq.TransientFaultHelper</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

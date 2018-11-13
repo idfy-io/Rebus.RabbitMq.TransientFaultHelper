@@ -8,4 +8,12 @@ install:
 
 script:
   - dotnet build -c Release src/
-  - dotnet test src/Rebus.RabbitMq.TransientFaultHelper.Test/Rebus.RabbitMq.TransientFaultHelper.Test.csproj
+  - dotnet pack src/Rebus.RabbitMq.TransientFaultHelper/ -c Release  
+
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: dotnet nuget push src/Rebus.RabbitMq.TransientFaultHelper/bin/Release/Rebus.RabbitMq.TransientFaultHelper.* --api-key $NUGET_APIKEY --source https://www.nuget.org/api/v2/package
+    on:
+      tags: true
