@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Rebus.RabbitMq.TransientFaultHelper\Rebus.RabbitMq.TransientFaultHelper.csproj" />
+    <ProjectReference Include="..\Rebus.RabbitMq.TransientFaultHelper\Rebus.RabbitMq.TransientFaultHelper.csproj" />
   </ItemGroup>
 
 </Project>
