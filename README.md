@@ -31,6 +31,6 @@ Configure.With(someContainerAdapter)
         .Logging(l => l.Serilog())
         .Transport(t => t.UseMsmq("myInputQueue"))
         .Routing(r => r.TypeBased().MapAssemblyOf<SomeMessageType>("anotherInputQueue"))
-        .Options(o => o.Decorate<IBus>(c => new Rebus.ResilientBusDecorator(c.Get<IBus>())))
+        .Options(o => o.Decorate<IBus>(c => new Rebus.TransientFaultBusDecorator(c.Get<IBus>())))
         .Start();
 ```
