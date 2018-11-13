@@ -10,7 +10,7 @@ A transient fault helper for Rebus using RabbitMQ
 Supports .NET Standard 2.0+, .NET Core 2.0+ and .NET Framework 4.6.1+.
 
 ## Installation
-Using NuGet is the easiest way to install the SDK.
+Using NuGet is the easiest way to install the Rebus extension.
 
 Package Manager:
 

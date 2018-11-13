@@ -9,7 +9,7 @@ namespace Rebus.RabbitMq.TransientFaultHelper.Test
         protected override void Setup()
         {
             
-            decoratorBus = new ResilientBusDecorator(fakeInternalBus, noOp, logMock.Object, null);
+            decoratorBus = new TransientFaultBusDecorator(fakeInternalBus, noOp, logMock.Object, null);
         }
 
         protected override void TestBeforeTearDown()
