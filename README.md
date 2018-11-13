@@ -1,5 +1,5 @@
 # Rebus.RabbitMq.TransientFaultHelper
-A transient fault helper for Rebus using RabbitMQ
+A transient fault helper for Rebus using RabbitMQ. Will retry sending messages to RabbitMQ. Use default policy or provide your own.
 
 
 
