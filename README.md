@@ -23,3 +23,14 @@ Command line:
 .NET Core CLI:  
 
 	dotnet add package Rebus.RabbitMq.TransientFaultHelper
+
+## Example
+
+  ```csharp
+Configure.With(someContainerAdapter)
+        .Logging(l => l.Serilog())
+        .Transport(t => t.UseMsmq("myInputQueue"))
+        .Routing(r => r.TypeBased().MapAssemblyOf<SomeMessageType>("anotherInputQueue"))
+        .Options(o => o.Decorate<IBus>(c => new Rebus.ResilientBusDecorator(c.Get<IBus>())))
+        .Start();
+```
