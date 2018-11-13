@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Polly;
 using RabbitMQ.Client.Exceptions;
@@ -10,16 +11,27 @@ using Rebus.Config;
 using Rebus.Logging;
 using Rebus.Pipeline;
 
+[assembly: InternalsVisibleTo("Rebus.RabbitMq.TransientFaultHelper.Test")]
 namespace Rebus
 {
+    /// <summary>
+    /// RabbitMQ resilient Rebus decorator
+    /// </summary>
     public class ResilientBusDecorator : IBus
     {
-        private readonly Policy retryPolicy;
+        private readonly IAsyncPolicy retryPolicy;
 
         readonly IBus innerBus;
         private readonly ILog Logger;
-
-        public ResilientBusDecorator(IBus bus, Policy policy=null,ILog logger=null)
+        private readonly Func<IMessageContext> MessageContextWrapper;
+        
+        /// <summary>
+        /// Resilient Rebus decorator
+        /// </summary>
+        /// <param name="bus">The bus to decorate</param>
+        /// <param name="policy">Polly policy if not set will use default 1 seconds 10 times</param>
+        /// <param name="logger">Rebus logger</param>
+        public ResilientBusDecorator(IBus bus, IAsyncPolicy policy=null,ILog logger=null)
         {
             this.innerBus = bus;
             Logger = logger;
@@ -33,11 +45,34 @@ namespace Rebus
                     .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
                         (exception, delay, _) => Logger?.Info("Bus operation failed", exception));
             }
+
+
+            MessageContextWrapper = () => MessageContext.Current;
+        }
+
+        internal ResilientBusDecorator(IBus bus, IAsyncPolicy policy, ILog logger, Func<IMessageContext> messageContext)
+        {
+            this.innerBus = bus;
+            Logger = logger;
+            
+            if (policy != null)
+            {
+                retryPolicy = policy;
+            }
+            else
+            {
+                retryPolicy = Policy.Handle<BrokerUnreachableException>()
+                    .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
+                        (exception, delay, _) => Logger?.Info("Bus operation failed", exception));
+            }
+
+
+            MessageContextWrapper = messageContext;
         }
 
         public async Task SendLocal(object commandMessage, Dictionary<string, string> optionalHeaders = null)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.SendLocal(commandMessage, optionalHeaders);
                 return;
@@ -48,7 +83,7 @@ namespace Rebus
 
         public async Task Send(object commandMessage, Dictionary<string, string> additionalHeaders)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Send(commandMessage, additionalHeaders);
                 return;
@@ -59,7 +94,7 @@ namespace Rebus
 
         public async Task DeferLocal(TimeSpan delay, object message, Dictionary<string, string> optionalHeaders = null)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.DeferLocal(delay, message,optionalHeaders);
                 return;
@@ -70,7 +105,7 @@ namespace Rebus
 
         public async Task Defer(TimeSpan delay, object message, Dictionary<string, string> optionalHeaders = null)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Defer(delay, message, optionalHeaders);
                 return;
@@ -81,7 +116,7 @@ namespace Rebus
 
         public async Task Reply(object replyMessage, Dictionary<string, string> optionalHeaders = null)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Reply(replyMessage, optionalHeaders);
                 return;
@@ -92,7 +127,7 @@ namespace Rebus
 
         public async Task Subscribe<TEvent>()
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Subscribe<TEvent>();
                 return;
@@ -103,7 +138,7 @@ namespace Rebus
 
         public async Task Subscribe(Type eventType)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Subscribe(eventType);
                 return;
@@ -114,7 +149,7 @@ namespace Rebus
 
         public async Task Unsubscribe<TEvent>()
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Unsubscribe<TEvent>();
                 return;
@@ -125,7 +160,7 @@ namespace Rebus
 
         public async Task Unsubscribe(Type eventType)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Unsubscribe(eventType);
                 return;
@@ -136,7 +171,7 @@ namespace Rebus
 
         public async Task Publish(object eventMessage, Dictionary<string, string> optionalHeaders = null)
         {
-            if (MessageContext.Current != null)
+            if (MessageContextWrapper != null)
             {
                 await innerBus.Publish(eventMessage, optionalHeaders);
                 return;
