@@ -45,12 +45,11 @@ namespace Rebus
         /// Resilient Rebus decorator
         /// </summary>
         /// <param name="bus">The bus to decorate</param>
-        /// <param name="policy">Retry policy, if not set default will be ued (10 times 1 second delay)</param>
         /// <param name="logException">Action to log exceptions</param>
-        public TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy = null, Action<string,Exception> logException=null)
+        public TransientFaultBusDecorator(IBus bus,Action<string,Exception> logException=null)
         {
             this.innerBus = bus;            
-            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
+            retryPolicy =  Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
                               .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
                                   (exception, delay, retryCount, context) =>
                                   {
@@ -61,6 +60,7 @@ namespace Rebus
             MessageContextWrapper = () => MessageContext.Current;
         }
 
+        #region Internal contructors for unittesting
         internal TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy, Func<IMessageContext> messageContext)
         {
             this.innerBus = bus;
@@ -74,6 +74,21 @@ namespace Rebus
             
             MessageContextWrapper = messageContext;
         }
+
+        internal TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy, Action<string, Exception> logException = null)
+        {
+            this.innerBus = bus;
+
+            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
+                              .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
+                                  (exception, delay, retryCount, context) =>
+                                  {
+                                      logException?.Invoke("Bus operation failed",exception);
+                                  });
+
+            MessageContextWrapper = () => MessageContext.Current;
+        }
+#endregion
 
         public async Task SendLocal(object commandMessage, Dictionary<string, string> optionalHeaders = null)
         {            
