@@ -1,4 +1,5 @@
-﻿using Polly;
+﻿using System;
+using Polly;
 using Polly.NoOp;
 
 namespace Rebus.RabbitMq.TransientFaultHelper.Test
@@ -9,12 +10,18 @@ namespace Rebus.RabbitMq.TransientFaultHelper.Test
         protected override void Setup()
         {
             
-            decoratorBus = new TransientFaultBusDecorator(fakeInternalBus, noOp, logMock.Object, null);
+            decoratorBus = new TransientFaultBusDecorator(fakeInternalBus, noOp,Log);
         }
 
         protected override void TestBeforeTearDown()
         {
             
+        }
+
+        private void Log(string message, Exception exception)
+        {
+            Console.WriteLine(message);
+            Console.WriteLine(exception);
         }
     }
 

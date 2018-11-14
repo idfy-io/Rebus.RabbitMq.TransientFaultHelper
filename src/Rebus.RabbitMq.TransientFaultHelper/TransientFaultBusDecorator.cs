@@ -7,7 +7,6 @@ using Polly;
 using RabbitMQ.Client.Exceptions;
 using Rebus.Bus;
 using Rebus.Bus.Advanced;
-using Rebus.Config;
 using Rebus.Logging;
 using Rebus.Pipeline;
 
@@ -21,7 +20,6 @@ namespace Rebus
     {
         private readonly IAsyncPolicy retryPolicy;
         private readonly IBus innerBus;
-        private readonly Action<string,Exception> LogException;
         private readonly ILog Logger =null;
         private readonly Func<IMessageContext> MessageContextWrapper;
         private readonly IAsyncPolicy defaultPolicy;
@@ -32,14 +30,14 @@ namespace Rebus
         /// <param name="bus">The bus to decorate</param>
         /// <param name="policy">Retry policy, if not set default will be ued (10 times 1 second delay)</param>
         /// <param name="logger">Rebus logger</param>
-        public TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy=null,ILog logger=null)
+        public TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy=null, IRebusLoggerFactory logger =null)
         {
             this.innerBus = bus;
-            Logger = logger;
-            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>()
+            Logger = logger?.GetLogger<TransientFaultBusDecorator>();
+            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
                               .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
-                                  (exception, delay, _) => Logger?.Info("Bus operation failed", exception));
-            
+                                  (exception, delay, retryCount, context) => Logger?.Warn("Bus operation failed", exception));
+
             MessageContextWrapper = () => MessageContext.Current;
         }
 
@@ -51,32 +49,34 @@ namespace Rebus
         /// <param name="logException">Action to log exceptions</param>
         public TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy = null, Action<string,Exception> logException=null)
         {
-            this.innerBus = bus;
-            this.LogException = logException;            
-            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>()
+            this.innerBus = bus;            
+            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
                               .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
-                                  (exception, delay, _) =>
+                                  (exception, delay, retryCount, context) =>
                                   {
                                       logException?.Invoke("Bus operation failed", exception);
-                                  });
+                                  })
+                              ;
 
             MessageContextWrapper = () => MessageContext.Current;
         }
 
-        internal TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy, ILog logger, Func<IMessageContext> messageContext)
+        internal TransientFaultBusDecorator(IBus bus, IAsyncPolicy policy, Func<IMessageContext> messageContext)
         {
             this.innerBus = bus;
-            Logger = logger;
-            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>()
+      
+            retryPolicy = policy ?? Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
                               .WaitAndRetryAsync(Enumerable.Repeat(TimeSpan.FromSeconds(1), 10),
-                                  (exception, delay, _) => Logger?.Warn("Bus operation failed", exception));
+                                  (exception, delay, retryCount, context) =>
+                                  {
+                                      Console.WriteLine("Bus operation failed");
+                                  });
             
             MessageContextWrapper = messageContext;
         }
 
         public async Task SendLocal(object commandMessage, Dictionary<string, string> optionalHeaders = null)
-        {
-            
+        {            
             await Execute(() => innerBus.SendLocal(commandMessage, optionalHeaders));
         }
 
@@ -127,9 +127,9 @@ namespace Rebus
 
         private Task Execute(Func<Task> operation)
         {
-            var currentMessageContext = MessageContextWrapper();
+            var currentMessageContext =  MessageContextWrapper();
 
-            Logger.Debug("Invoking {operation} in TransientFaultBusDecorator", operation.Method.Name);
+            Logger?.Debug("Invoking {operation} in TransientFaultBusDecorator", operation.Method.Name);
 
             return currentMessageContext != null ? operation() : retryPolicy.ExecuteAsync(operation);
         }

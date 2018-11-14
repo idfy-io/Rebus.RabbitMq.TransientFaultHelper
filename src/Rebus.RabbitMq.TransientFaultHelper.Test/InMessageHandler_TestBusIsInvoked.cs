@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Moq;
 using NUnit.Framework;
+using Rebus.Pipeline;
 using Rebus.TestHelpers.Events;
 
 namespace Rebus.RabbitMq.TransientFaultHelper.Test
@@ -9,12 +12,12 @@ namespace Rebus.RabbitMq.TransientFaultHelper.Test
     {
         protected override void Setup()
         {
-            decoratorBus = new TransientFaultBusDecorator(fakeInternalBus, policyMock.Object, logMock.Object);
+            decoratorBus = new TransientFaultBusDecorator(fakeInternalBus, policyMock.Object, ()=>new Mock<IMessageContext>().Object);
         }
 
         protected override void TestBeforeTearDown()
         {
-            //Nothing
+            policyMock.Verify(x => x.ExecuteAsync(It.IsAny<Func<Task>>()), Times.Never);
         }
     }
 }

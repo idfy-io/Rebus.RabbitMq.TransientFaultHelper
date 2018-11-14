@@ -18,7 +18,7 @@ namespace Rebus.RabbitMq.TransientFaultHelper.Test
         protected FakeBus fakeInternalBus;
         protected IBus decoratorBus;
         protected Moq.Mock<IAsyncPolicy> policyMock;
-        protected Moq.Mock<Rebus.Logging.ILog> logMock;
+        protected Moq.Mock<Rebus.Logging.IRebusLoggerFactory> logMock;
         protected DummyMessage message = new DummyMessage() {Count = 1, Title = "Dummy message", Id = Guid.NewGuid(),};
         protected TimeSpan TimeSpan = TimeSpan.FromMinutes(1);
 
@@ -33,11 +33,12 @@ namespace Rebus.RabbitMq.TransientFaultHelper.Test
         [SetUp]
         public void BaseSetup()
         {
-            logMock = new Mock<Rebus.Logging.ILog>();
+            logMock = new Mock<Rebus.Logging.IRebusLoggerFactory>();
             policyMock = new Mock<IAsyncPolicy>();
             fakeInternalBus = new FakeBus();
 
-            logMock.Setup(x => x.Info(It.IsAny<string>(), It.IsAny<object[]>()));
+            
+
 
 
             Setup();
