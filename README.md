@@ -30,7 +30,7 @@ Command line:
 Configure.With(someContainerAdapter)
         .Logging(l => l.Serilog())
         .Transport(t => t.UseMsmq("myInputQueue"))
-        .Routing(r => r.TypeBased().MapAssemblyOf<SomeMessageType>("anotherInputQueue"))
-	.Options(o => o.AddTransientFaultBus())
+      	.Routing(r => r.TypeBased().MapAssemblyOf<SomeMessageType>("anotherInputQueue"))
+        .Options(o => o.AddTransientFaultBus())
         .Start();
 ```
