@@ -6,7 +6,6 @@ A transient fault helper for Rebus using RabbitMQ. Will retry sending messages t
 [![Build Status](https://travis-ci.org/idfy-io/Rebus.RabbitMq.TransientFaultHelper.svg?branch=master)](https://travis-ci.org/idfy-io/Rebus.RabbitMq.TransientFaultHelper) [![NuGet](https://img.shields.io/nuget/v/Rebus.RabbitMq.TransientFaultHelper.svg)](https://www.nuget.org/packages/Rebus.RabbitMq.TransientFaultHelper)
 
 
-
 Supports .NET Standard 2.0+, .NET Core 2.0+ and .NET Framework 4.6.1+.
 
 ## Installation
