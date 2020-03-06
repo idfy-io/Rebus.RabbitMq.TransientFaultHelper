@@ -90,27 +90,27 @@ namespace Rebus
         }
 #endregion
 
-        public async Task SendLocal(object commandMessage, Dictionary<string, string> optionalHeaders = null)
+        public async Task SendLocal(object commandMessage, IDictionary<string, string> optionalHeaders = null)
         {            
             await Execute(() => innerBus.SendLocal(commandMessage, optionalHeaders));
         }
 
-        public async Task Send(object commandMessage, Dictionary<string, string> additionalHeaders)
+        public async Task Send(object commandMessage, IDictionary<string, string> additionalHeaders)
         {
             await Execute(() => innerBus.Send(commandMessage, additionalHeaders));
         }
 
-        public async Task DeferLocal(TimeSpan delay, object message, Dictionary<string, string> optionalHeaders = null)
+        public async Task DeferLocal(TimeSpan delay, object message, IDictionary<string, string> optionalHeaders = null)
         {
             await Execute(() => innerBus.DeferLocal(delay, message, optionalHeaders));
         }
 
-        public async Task Defer(TimeSpan delay, object message, Dictionary<string, string> optionalHeaders = null)
+        public async Task Defer(TimeSpan delay, object message, IDictionary<string, string> optionalHeaders = null)
         {
             await Execute(() => innerBus.Defer(delay, message, optionalHeaders));
         }
 
-        public async Task Reply(object replyMessage, Dictionary<string, string> optionalHeaders = null)
+        public async Task Reply(object replyMessage, IDictionary<string, string> optionalHeaders = null)
         {
             await Execute(() => innerBus.Reply(replyMessage, optionalHeaders));
         }
@@ -135,7 +135,7 @@ namespace Rebus
             await Execute(() => innerBus.Unsubscribe(eventType));
         }
 
-        public async Task Publish(object eventMessage, Dictionary<string, string> optionalHeaders = null)
+        public async Task Publish(object eventMessage, IDictionary<string, string> optionalHeaders = null)
         {         
             await Execute(() => innerBus.Publish(eventMessage, optionalHeaders));
         }

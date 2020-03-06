@@ -6,7 +6,7 @@ namespace Rebus.RabbitMq.TransientFaultHelper.Test
 {
     public class NotInMessageHandler_TestBusIsInvoked : BusTests
     {
-        NoOpPolicy noOp = Policy.NoOpAsync();
+        AsyncNoOpPolicy noOp = Policy.NoOpAsync();
         protected override void Setup()
         {
             
