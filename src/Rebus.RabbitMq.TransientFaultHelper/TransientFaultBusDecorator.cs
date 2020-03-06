@@ -46,7 +46,7 @@ namespace Rebus
         /// </summary>
         /// <param name="bus">The bus to decorate</param>
         /// <param name="logException">Action to log exceptions</param>
-        public TransientFaultBusDecorator(IBus bus,Action<string,Exception> logException=null)
+        public TransientFaultBusDecorator(IBus bus, Action<string,Exception> logException=null)
         {
             this.innerBus = bus;            
             retryPolicy =  Policy.Handle<BrokerUnreachableException>().Or<OperationInterruptedException>()
